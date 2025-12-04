@@ -1,0 +1,25 @@
+{
+	"id": "jm-portainer",
+	"name": "jm-portainer",
+	"shortname": "JM-Portainer",
+	"description": "Companion module for controlling portainer",
+	"version": "0.0.0",
+	"license": "MIT",
+	"repository": "git+https://github.com/GermyCode/companion-module-jm-portainer.git",
+	"bugs": "https://github.com/GermyCode/companion-module-jm-portainer/issues",
+	"maintainers": [
+		{
+			"name": "me"
+		}
+	],
+	"runtime": {
+		"type": "node22",
+		"api": "nodejs-ipc",
+		"apiVersion": "1.8.0",
+		"entrypoint": "../index.js"
+	},
+	"legacyIds": [],
+	"manufacturer": "JM",
+	"products": ["Portainer"],
+	"keywords": []
+}
