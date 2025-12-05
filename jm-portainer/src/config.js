@@ -2,6 +2,7 @@ const { Regex } = require('@companion-module/base')
 
 module.exports = {
 	getConfigFields() {
+		let self = this;
 		return [
 			{ // main info
 				type: 'static-text',
@@ -41,6 +42,14 @@ module.exports = {
 				width: 12,
 				default: '',
 			},
+			{
+				type: 'dropdown',
+				id: 'enviromentID',
+				label: 'Enviroments (Auto Detected)',
+				width: 12,
+				default: self.ENVIROMENTS[0].id,
+				choices: self.ENVIROMENTS,
+			},
 			{ // verbose info
 				type: 'static-text',
 				id: 'info2',
@@ -55,7 +64,7 @@ module.exports = {
 			{ // verbose toggle
 				type: 'checkbox',
 				id: 'verbose',
-				label: 'Enable Verbose Logging',
+				label: '',
 				default: false,
 				width: 12
 			},

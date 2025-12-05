@@ -1,26 +1,19 @@
+const variableList = [
+	{ name: 'Enviroment Name', variableId: 'enviromentName' },
+	{ name: 'Enviroment Id', variableId: 'enviromentId' },
+]
+
 module.exports = {
 	initVariables () {
 		let self = this;
-
-		let variables = [];
-
-		// variables.push({ variableId: 'device', name: 'MAC Address' })
-
-		self.setVariableDefinitions(variables);
+		self.setVariableDefinitions(variableList);
 	},
 
-	checkVariables () {
-		let self = this;
+	checkVariableValues() {
+		let self = this
 
-		try {
-			let variableObj = {};
-
-			// variableObj.power = self.INFO.power;
-
-			self.setVariableValues(variableObj);
-		}
-		catch(error) {
-			self.log('error', 'Error setting variables: ' + error);
-		}
+		self.setVariableValues({ enviromentName: self.enviroment.Name })
+		self.setVariableValues({ enviromentId: self.enviroment.Id })
 	}
 }
+module.exports.variableList = variableList

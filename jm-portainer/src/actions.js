@@ -1,7 +1,93 @@
 module.exports = {
 	initActions () {
 		let self = this;
+
 		let actions = {};
+
+		// ====================
+		// ==== containers ====
+		// ====================
+
+		actions.getContainers = {
+			name: 'getContainers',
+			options: [
+				{
+					type: 'checkbox',
+					id: 'all',
+					label: 'Get ALL Containers',
+					default: false,
+					tooltip: 'false - gets ACTIVE/RUNNING containers. true - gets ALL containers'
+				},
+			],
+			callback: async function (action) {
+				self.log('debug', 'Getting Containers');
+
+				this.variableList.push({ name: 'abc', variableId: 'def' })
+
+				self.PORTAINER.container_getContainers(self.enviroment.id, action.options.all)
+				.then((data) => {
+					self.
+					self.log('info', JSON.stringify(data))
+				})
+				.catch((error) => {self.log('error', self.processError(error))});
+			}
+		};
+
+		actions.inspectContainer = {
+			name: 'inspectContainer',
+			options: [
+				{
+					type: 'dropdown',
+					id: 'containerID',
+					label: 'Select a Container',
+					choices: self.CONTAINERS,
+					default: 0,
+				},
+			],
+			callback: async function (action) {
+				// self.log('debug', 'Getting Containers');
+
+				// this.variableList.push({ name: 'abc', variableId: 'def' })
+
+				// self.PORTAINER.container_getContainers(self.enviroment.id, action.options.all)
+				// .then((data) => {
+				// 	self.
+				// 	self.log('info', JSON.stringify(data))
+				// })
+				// .catch((error) => {self.log('error', self.processError(error))});
+			}
+		};
+
+
+
+
+
+		// =====================
+		// ==== enviroments ====
+		// =====================
+
+		actions.getEnviroments = {
+			name: 'getEnviroments',
+			options: [],
+			callback: async function (action) {
+				self.log('debug', 'Getting Enviroments');
+
+				self.PORTAINER.enviroment_getEnviroments()
+				.then((data) => {self.log('info', JSON.stringify(data))})
+				.catch((error) => {self.log('error', self.processError(error))});
+			}
+		};
+
+
+
+
+
+
+
+
+		// ================
+		// ==== stacks ====
+		// ================
 
 		actions.getStacks = {
 			name: 'getStacks',
@@ -9,7 +95,7 @@ module.exports = {
 			callback: async function () {
 				self.log('debug', 'Retreving Stacks');
 
-				self.PORTAINER.getStacks()
+				self.PORTAINER.stack_getStacks()
 				.then((data) => {self.log('info', JSON.stringify(data))})
 				.catch((error) => {self.log('error', self.processError(error))});
 			}
@@ -33,7 +119,7 @@ module.exports = {
 			callback: async function (action) {
 				self.log('debug', 'Starting Stack' + action.options.stackID);
 
-				self.PORTAINER.startStack(action.options.stackID, action.options.endpointId)
+				self.PORTAINER.stack_start(action.options.stackID, action.options.endpointId)
 				.then((data) => {self.log('info', JSON.stringify(data))})
 				.catch((error) => {self.log('error', self.processError(error))});
 			}
@@ -57,73 +143,36 @@ module.exports = {
 			callback: async function (action) {
 				self.log('debug', 'Stopping Stack' + action.options.stackID);
 
-				self.PORTAINER.stopStack(action.options.stackID, action.options.endpointId)
+				self.PORTAINER.stack_stop(action.options.stackID, action.options.endpointId)
 				.then((data) => {self.log('info', JSON.stringify(data))})
 				.catch((error) => {self.log('error', self.processError(error))});
 			}
 		};
 
-		// actions.makeAPIJWT = {
-		// 	name: 'makeAPIJWT',
-		// 	options: [],
-		// 	callback: async function (action) {
-		// 		self.log('debug', 'Making JWT Key');
+		actions.getContainerStats = {
+			name: 'getContainerStats',
+			options: [
+				{
+					type: 'number',
+					id: 'enviromentID',
+					label: 'Enviroment ID',
+					default: 0,
+				},
+				{
+					type: 'textinput',
+					id: 'containerID',
+					label: 'Container ID',
+					default: '',
+				},
+			],
+			callback: async function (action) {
+				// self.log('debug', 'Stopping Stack' + action.options.stackID);
 
-		// 		// self.send_request('makeAPIJWT', limit, offset, query)
-		// 		self.PFSENSE.makeAPIJWT()
-		// 		.then((data) => {self.log('info', JSON.stringify(data))})
-		// 		.catch((error) => {self.log('error', self.processError(error))});
-		// 	}
-		// };
-		// actions.makeAPIKey = {
-		// 	name: 'makeAPIKey',
-		// 	options: [
-		// 		{
-		// 			type: 'textinput',
-		// 			label: 'descr',
-		// 			id: 'descr',
-		// 			tooltip: 'Identifyer for the key, for administrative purposes',
-		// 		},
-		// 		{
-		// 			type: 'dropdown',
-		// 			label: 'hash_algo',
-		// 			id: 'hash_algo',
-		// 			choices: [
-		// 				{ id: 'sha256', label: 'sha256' },
-		// 				{ id: 'sha384', label: 'sha384' },
-		// 				{ id: 'sha512', label: 'sha512' },
-		// 			],
-		// 			default: 'sha256',
-		// 			tooltip: 'The hash algorithm used for this API key. It is recommended to increase the strength of the algorithm for keys assigned to privileged users.'
-		// 		},
-		// 		{
-		// 			type: 'dropdown',
-		// 			label: 'length_bytes',
-		// 			id: 'length_bytes',
-		// 			choices: [
-		// 				{ id: 16, label: '16'},
-		// 				{ id: 24, label: '24'},
-		// 				{ id: 32, label: '32'},
-		// 				{ id: 64, label: '64'},
-		// 			],
-		// 			default: 16,
-		// 			tooltip: 'The hash algorithm used for this API key. It is recommended to increase the strength of the algorithm for keys assigned to privileged users.'
-		// 		},
-		// 	],
-		// 	callback: async function (action) {
-		// 		self.log('debug', 'Making API Key');
-
-		// 		const descr = action.options.descr == '' ? 'Made With Companion' : action.options.descr
-		// 		const hash_algo  = action.options.hash_algo
-		// 		const length_bytes  = parseInt(action.options.length_bytes)
-
-		// 		// self.send_request('makeAPIKey', limit, offset, query)
-		// 		self.PFSENSE.makeAPIKey(descr, hash_algo, length_bytes)
-		// 		.then((data) => {self.log('info', JSON.stringify(data))})
-		// 		.catch((error) => {self.log('error', self.processError(error))});
-		// 	}
-		// };
-
+				self.PORTAINER.container_getStats(action.options.enviromentID, action.options.containerID)
+				.then((data) => {self.log('info', JSON.stringify(data))})
+				.catch((error) => {self.log('error', self.processError(error))});
+			}
+		};
 
 
 

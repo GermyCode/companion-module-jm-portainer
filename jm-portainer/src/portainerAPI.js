@@ -4,12 +4,12 @@ const https = require('https');
 class portainer {
 	/**
 	 * @description provide an api_key or admin credientials. If using admin creds set api_key to null and supply user pass
-	 * @param {string} host 
-	 * @param {number} port 
+	 * @param {string} host
+	 * @param {number} port
 	 * @param {boolean} usehttps
-	 * @param {string} api_key 
-	 * @param {string} authUser 
-	 * @param {string} authPass 
+	 * @param {string} api_key
+	 * @param {string} authUser
+	 * @param {string} authPass
 	 */
 	constructor(host, port, usehttps, api_key, authUser, authPass) {
 		if (api_key) {
@@ -19,8 +19,6 @@ class portainer {
 			this.authUser = authUser
 			this.authPass = authPass
 			this.authToken = 'Authorization'
-		} else {
-			throw Error('need to provide atleast one authorization method, api key or admin credientials')
 		}
 		this.protocol = usehttps ? 'https' : 'http'
 		this.basePath = `${this.protocol}://${host}:${port}/api`;
@@ -52,7 +50,6 @@ class portainer {
 				config.httpsAgent = new https.Agent({rejectUnauthorized: false})
 			}
 
-			console.log(config)
 			axios(config)
 			.then((response) => resolve(response.data))
 			.catch((error) => reject(error));
@@ -62,6 +59,142 @@ class portainer {
 	// ===================
 	// === Containers ====
 	// ===================
+
+	/**
+	 * @description Returns a list of containers.
+	 * @access -
+	 * @param {integer} enviromentID
+	 * @param {boolean} all
+	 * @returns 
+	 */
+	container_getContainers(enviromentID, all = false) {
+		var endpoint = `/endpoints/${enviromentID}/docker/containers/json`
+		if (all) {
+			endpoint += `?all=${all}`
+		}
+		return this.request('GET', endpoint)
+	}
+
+	/**
+	 * @description Makes a container. See docker api docuentation for body formatting
+	 * @access -
+	 * @param {integer} enviromentID
+	 * @param {string} name
+	 * @param {object} body
+	 */
+	container_make(enviromentID, name = null, body) {
+		var endpoint = `/endpoints/${enviromentID}/docker/containers/json`
+		if (name) {
+			endpoint += `?name=${name}`
+		}
+		return this.request('POST', endpoint, body)
+	}
+
+	/**
+	 * @description Return low-level information about a container.
+	 * @access -
+	 * @param {integer} enviromentID
+	 * @param {string} containerID
+	 */
+	container_inspect(enviromentID, containerID) {
+		return this.request('GET', `/endpoints/${enviromentID}/docker/containers/${containerID}/json`)
+	}
+
+	/**
+	 * @description List processes running inside a container. On Unix systems, this is done by running the ps command. This endpoint is not supported on Windows.
+	 * @access -
+	 * @param {integer} enviromentID
+	 * @param {string} containerID
+	 * @param {string} ps_args
+	 */
+	container_listProcesses(enviromentID, containerID, ps_args = '') {
+		var endpoint = `/endpoints/${enviromentID}/docker/containers/${containerID}/top`
+		if (ps_args) {
+			endpoint += `?ps_args=${ps_args}`
+		}
+		return this.request('GET', endpoint)
+	}
+
+	/**
+	 * @description Get stdout and stderr logs from a container. Note: This endpoint works only for containers with the json-file or journald logging driver.
+	 * @access -
+	 * @param {integer} enviromentID
+	 * @param {string} containerID
+	 * @param {boolean} [follow=false] - Keep connection after returning logs.
+	 * @param {boolean} [stdout=false] - Return logs from stdout
+	 * @param {boolean} [stderr=false] - Return logs from stderr
+	 * @param {integer} [since=0] - Only return logs since this time, as a UNIX timestamp
+	 * @param {integer} [until=0] - Only return logs before this time, as a UNIX timestamp
+	 * @param {boolean} [timestamps=false] - Add timestamps to every log line
+	 * @param {"integer" | "string"} [tail=all] - Only return this number of log lines from the end of the logs. Specify as an integer or all to output all log lines.
+	 */
+	container_getLogs(enviromentID, containerID, follow, stdout, stderr, since, until, timestamps, tail) {
+		var endpoint = `/endpoints/${enviromentID}/docker/containers/${containerID}/logs`
+		if (follow) endpoint += `?follow=${follow}`
+		if (stdout) endpoint += `?stdout=${stdout}`
+		if (stderr) endpoint += `?stderr=${stderr}`
+		if (since) endpoint += `?since=${since}`
+		if (until) endpoint += `?until=${until}`
+		if (timestamps) endpoint += `?timestamps=${timestamps}`
+		if (tail) endpoint += `?tail=${tail}`
+		return this.request('GET', endpoint)
+	}
+
+	/**
+	 * @description Returns which files in a container's filesystem have been added, deleted, or modified. The Kind of modification can be one of: 0: Modified ("C") 1: Added ("A") 2: Deleted ("D")
+	 * @access -
+	 * @param {integer} enviromentID
+	 * @param {string} containerID
+	 */
+	container_getFilesystemChanges(enviromentID, containerID) {
+		return this.request('GET', `/endpoints/${enviromentID}/docker/containers/${containerID}/changes`)
+	}
+	
+	// /**
+	//  * @description Export the contents of a container as a tarball.
+	//  * @access -
+	//  * @param {integer} enviromentID
+	//  * @param {string} containerID
+	//  */
+	// container_export(enviromentID, containerID) {
+	// 	return this.request('GET', `/endpoints/${enviromentID}/docker/containers/${containerID}/export`)
+	// }
+
+	/**
+	 * @description Get stdout and stderr logs from a container. Note: This endpoint works only for containers with the json-file or journald logging driver.
+	 * @access -
+	 * @param {integer} enviromentID
+	 * @param {string} containerID
+	 * @param {boolean} [stream=false] - Stream the output. If false, the stats will be output once and then it will disconnect.
+	 * @param {boolean} [one_shot=false] - Only get a single stat instead of waiting for 2 cycles. Must be used with stream=false.
+	 */
+	container_getStats(enviromentID, containerID, stream, one_shot) {
+		var endpoint = `/endpoints/${enviromentID}/docker/containers/${containerID}/stats`
+		if (stream) {endpoint += `?stream=${stream}`} else {endpoint += '?stream=false'}
+		if (one_shot) endpoint += `?one-shot=${one_shot}`
+		return this.request('GET', endpoint)
+	}
+
+	/**
+	 * @description Get stdout and stderr logs from a container. Note: This endpoint works only for containers with the json-file or journald logging driver.
+	 * @access -
+	 * @param {integer} enviromentID
+	 * @param {string} containerID
+	 * @param {boolean} [stream=false] - Stream the output. If false, the stats will be output once and then it will disconnect.
+	 * @param {boolean} [one_shot=false] - Only get a single stat instead of waiting for 2 cycles. Must be used with stream=false.
+	 */
+	container_getStats(enviromentID, containerID, stream, one_shot) {
+		var endpoint = `/endpoints/${enviromentID}/docker/containers/${containerID}/stats`
+		if (stream) {endpoint += `?stream=${stream}`} else {endpoint += '?stream=false'}
+		if (one_shot) endpoint += `?one-shot=${one_shot}`
+		return this.request('GET', endpoint)
+	}
+
+
+
+
+
+
 
 
 
@@ -76,6 +209,7 @@ class portainer {
 	// ===============================
 	// === Enviroments(Endpoints) ====
 	// ===============================
+
 	// /**
 	//  * @param {number} [start] - Start searching from
 	//  * @param {number} [limit] - Limit results to this value
@@ -312,13 +446,13 @@ class portainer {
 	// ===============
 	// === stacks ====
 	// ===============
-	stacks_get() {
+	stack_getStacks() {
 		return this.request('GET', '/stacks');
 	}
-	stacks_start(stackID, endpointId) {
+	stack_start(stackID, endpointId) {
 		return this.request('POST', `/stacks/${stackID}/start?id=${stackID}&endpointId=${endpointId}`);
 	}
-	stacks_stop(stackID, endpointId) {
+	stack_stop(stackID, endpointId) {
 		return this.request('POST', `/stacks/${stackID}/stop?id=${stackID}&endpointId=${endpointId}`);
 	}
 }
